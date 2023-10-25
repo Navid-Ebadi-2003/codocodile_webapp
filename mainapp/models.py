@@ -12,7 +12,7 @@ class post(models.Model):
     title = models.CharField(max_length=300)
     body = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rate = models.DecimalField(max_digits=6, decimal_places=6)
+    rate = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(tag, blank=True, null=True)
     
@@ -20,7 +20,7 @@ class post(models.Model):
         ordering = ['-created']
     
     def __str__(self):
-        return self.name 
+        return self.title 
     
 class comment(models.Model):
     text = models.TextField()
@@ -47,3 +47,10 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.related_user.username
+    
+class followship(models.Model):
+    related_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
+    followed_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
+    
+    def __str__(self):
+        return "{} -> {}".format(self.related_user, self.followed_user)

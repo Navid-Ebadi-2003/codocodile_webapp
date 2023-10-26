@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from mainapp import forms
 
+
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     latest_posts = post.objects.filter(
@@ -114,3 +115,23 @@ def editPost(request, pk):
             messages.error(request, 'entries are invalid')
     
     return render(request, 'edit_post.html', {'form': form}) 
+
+
+def search(request):
+    query = request.GET.get('q')
+    search_post = None
+    search_user = None
+    
+    
+    if query:
+        search_post = post.objects.filter(Q(body__icontains=query))
+        search_user = User.objects.filter(Q(username__icontains=query))
+        # search_full_name = Profile.objects.filter(related_user=search_user.first()).first().full_name
+        
+        
+    return render(request, 'edit_post.html', {
+        'search_post': search_post,
+        'search_user': search_user,
+        # 'search_full_name' : search_full_name
+    })
+        

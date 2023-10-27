@@ -1,42 +1,46 @@
-{% extends 'base.html' %}
+	{% extends "base.html" %}
+    {% load static %}
+    {% block main %}
+            <!-- Search form -->
+            <div class="row tm-row">
+                <div class="col-12">
+                    <form method="GET" class="form-inline tm-mb-40 tm-search-form">                
+                        <input name="q" class="form-control tm-search-input" name="query" type="text" placeholder="Search..." aria-label="Search">
+                        <button class="tm-search-button" type="submit">
+                            <i class="fas fa-search tm-search-icon" aria-hidden="true"></i>
+                        </button>                                
+                    </form>
+                </div>                
+            </div>            
+            <div class="row tm-row">
+                {% for post in posts %}
+                <article style="margin-bottom: 20px;" class="col-12 tm-post my-card">
+                    <a style="text-decoration: none;" href="{% url 'post' post.id %}" class="effect-lily tm-post-link">
+                        <h1 class="tm-color-primary tm-post-title" style="font-size: 36px;">{{post.title}}</h1>
+                    </a>  
+                    <hr>                  
+                    <p class="tm-pt-10" style="font-size: 20px; text-align: left;">
+                        {{post.body | truncatechars:200 }}
+                    </p>
 
-{% block main %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-3" style="padding: 12px">
-            {% for tag in tags %}
-            <a href="{% url 'tag' tag.id %}">
-                <div style="padding:3px 5px 3px 5px">
-                    {{tag.name}}
-                    <div class="badge rounded-pill bg-secondary" style="float: right;">
-                        {{tag.post_set.all.count}}
+                    <div>
+                        {% if request.user.username == post.user.username %}
+                        <a href="{% url 'editPost' post.id %}">edit</a><br>
+                        {% endif %}
+                        created by: <a href="{% url 'profile' post.user.username %}">{{post.user.username}}</a>
+                        , {{ post.created|timesince }} ago
                     </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <!-- <footer class="row tm-row">
+                <hr class="col-12">
+                <div class="col-md-6 col-12 tm-color-gray">
+                    Design: <a rel="nofollow" target="_parent" href="https://templatemo.com" class="tm-external-link">TemplateMo</a>
                 </div>
-            </a>
-            {% endfor %}
-        </div>
-        <div class="col-md-6">
-            <a href="{% url 'newPost' %}">Create New Post</a>
-            {% for post in posts %}
-            <a href="{% url 'post' post.id %}">
-                <div class="card">
-                    <div class="card-body">
-                      <h5 class="card-title">{{post.title}}</h5>
-                      {% for tag in post.tags.all %}
-                      <a href="{% url 'tag' tag.id %}"><span class="badge rounded-pill bg-secondary">{{tag.name}}</span></a>
-                      {% endfor %}
-                      {% if request.user.username == post.auther.username %}
-                      <a href="{% url 'editPost' post.id %}">edit</a>
-                      {% endif %}
-                      <a href="{% url 'profile' post.user.username %}">{{post.user.username}}</a>
-                      <p class="card-text">{{post.body}}</p>
-                      <p class="card-text"><small class="text-muted">{{post.created|timesince}} ago</small></p>
-                    </div>
+                <div class="col-md-6 col-12 tm-color-gray tm-copyright">
+                    Copyright 2020 Xtra Blog Company Co. Ltd.
                 </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-    
-</div>
-{% endblock %}
+            </footer> -->
+    {% endblock main %}

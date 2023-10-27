@@ -1,45 +1,109 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<div class="container">
-    <div class="text-center">
-        <div>
+
+
+<div class="container mt-5 d-flex justify-content-center" style="padding-top: 0;">
+    <div class="card p-3" style="height: 200px; margin-bottom: 50px;">
+      <div class="d-flex align-items-center">
+        <div class="image">
             {% if profile.avatar %}
-            <img class="rounded-circle mb-3"  style="width: 150px;height: 150px;" src="{{media}}{{profile.avatar.name}}">
-            {% else %}
+          <img class="rounded-circle mb-3"  style="width: 150px;height: 150px;"  src="{{media}}{{profile.avatar.name}}"/>
+          {% else %}
             <img class="rounded-circle mb-3"  style="width: 150px;height: 150px;" src="{{media}}/avatar.png">
             {% endif %}
         </div>
-        <div>
-            <h3>@{{user.username}}</h3>
-        </div>
-        <hr>
-        <div>
-            {% if profile.bio %}
-              {{profile.bio}}
+
+        <div class="ml-3 w-100">
+          <h4 class="mb-0 mt-0">@{{user.username}}</h4>
+          <span>{{user.bio}}</span>
+
+          <div
+            class="p-2 mt-2 bg-primary d-flex justify-content-between rounded text-white stats"
+          >
+            <div class="d-flex flex-column">
+              <span class="articles">Following</span>
+              <span class="number1">{{following}}</span>
+            </div>
+
+            <div class="d-flex flex-column">
+              <span class="followers">Followers</span>
+              <span class="number2">{{followers}}</span>
+            </div>
+
+            <div class="d-flex flex-column">
+              <span class="rating">Rating</span>
+              <span class="number3">{{profile.rate|floatformat:1}}</span>
+            </div>
+          </div>
+
+          <div class="button mt-2 d-flex flex-row align-items-center">
+            {% if is_following %}
+                <a class="btn btn-sm btn-primary w-100 ml-2" href="{% url 'follow' user.username %}">unfollow</a>
+            {% else %}
+                <a class="btn btn-sm btn-primary w-100 ml-2" href="{% url 'follow' user.username %}">follow</a>
             {% endif %}
+
+            {% if request.user != user %}
+            <form action="{% url 'rate' user.username %}" method="post">
+                {% csrf_token %}
+                <input style="display: inline;" type="range" min="0" max="10" name="rate" id="pi_input">
+                <input style="display: inline;" type="submit" value="submit">
+                <label for="" id="value"></label>
+                <script>
+                    const value = document.querySelector("#value");
+                    const input = document.querySelector("#pi_input");
+                    value.textContent = input.value;
+                    input.addEventListener("input", (event) => {
+                    value.textContent = event.target.value;
+                    });
+                </script>
+            </form>
+            {% endif %}
+          </div>
+          
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="text-center">
+        
         <div>
-            {% for post in posts %}
-            <a href="{% url 'post' post.id %}">
-                <div class="card">
-                    <div class="card-body">
-                      <h5 class="card-title">{{post.name}}</h5>
-                      {% for tag in post.tags.all %}
-                      <a href="{% url 'tag' tag.id %}"><span class="badge rounded-pill bg-secondary">{{tag.name}}</span></a>
-                      {% endfor %}
-                      {% if request.user.username == post.auther.username %}
-                      <a href="{% url 'editPost' post.id %}">edit</a>
-                      {% endif %}
-                      <a href="">{{post.auther.username}}</a>
-                      <p class="card-text">{{post.text}}</p>
-                      <p class="card-text"><small class="text-muted">{{post.created|timesince}} ago</small></p>
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
+          {% for post in posts %}
+          <article style="margin-bottom: 20px;" class="col-12 tm-post my-card">
+            <a style="text-decoration: none;" href="{% url 'post' post.id %}" class="effect-lily tm-post-link">
+                <h1 class="tm-color-primary tm-post-title" style="font-size: 36px;">{{post.title}}</h1>
+            </a>  
+            <hr>                  
+            <p class="tm-pt-10" style="font-size: 20px; text-align: left;">
+                {{post.body | truncatechars:200 }}
+            </p>
+
+            <div>
+                {% if request.user.username == post.user.username %}
+                <a href="{% url 'editPost' post.id %}">edit</a><br>
+                {% endif %}
+                created by: <a href="{% url 'profile' post.user.username %}">{{post.user.username}}</a>
+                , {{ post.created|timesince }} ago
+            </div>
+        </article>
+          {% endfor %}
+      </div>
     </div>
 </div>
-
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha1/dist/js/bootstrap.bundle.min.js"
+  ></script>
+  <script type="text/javascript" src="#"></script>
+  <script type="text/javascript" src="#"></script>
+  <script type="text/javascript" src="#"></script>
+  <!-- <script type='text/javascript'>#</script> -->
+  <script type="text/javascript">
+    var myLink = document.querySelector('a[href="#"]');
+    myLink.addEventListener("click", function (e) {
+      e.preventDefault();
+    });
+  </script>
 {% endblock main %}

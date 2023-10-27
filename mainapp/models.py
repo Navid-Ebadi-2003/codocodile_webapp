@@ -12,7 +12,6 @@ class post(models.Model):
     title = models.CharField(max_length=300)
     body = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rate = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(tag, blank=True, null=True)
     
@@ -31,6 +30,9 @@ class comment(models.Model):
     def __str__(self):
         return self.text[0:20]
     
+    class Meta:
+        ordering = ['-created']
+    
 class Profile(models.Model):
     genders = [
         ('N', 'Rather not to say'),
@@ -44,6 +46,8 @@ class Profile(models.Model):
     gender = models.CharField(max_length=1, default='N', choices=genders)
     related_user = models.OneToOneField(User, on_delete=models.CASCADE)
     birth_date = models.DateField(null=True, blank=True)
+    rate = models.FloatField(default=0)
+    rate_count = models.IntegerField(default=0)
     
     def __str__(self):
         return self.related_user.username
@@ -54,3 +58,11 @@ class followship(models.Model):
     
     def __str__(self):
         return "{} -> {}".format(self.related_user, self.followed_user)
+    
+    @staticmethod
+    def followers_count(user):
+        return followship.objects.filter(followed_user=user).all().count()
+
+    @staticmethod
+    def following_count(followed_by):
+        return followship.objects.filter(related_user=followed_by).all().count()

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate, logout
-from mainapp.models import Profile, tag, post, comment
+from mainapp.models import Profile, tag, post, comment, followship
 from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -61,9 +61,8 @@ def register_page(request):
 
 def post_page(request, pk):
     form = forms.commentForm()
-    
     post_object = get_object_or_404(post, id=pk)
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated:
         form = forms.commentForm(request.POST)
         
         if form.is_valid():
@@ -73,17 +72,34 @@ def post_page(request, pk):
             comment_object.save()
             messages.success(request, 'comment created successfully')
             return redirect('post', pk=post_object.id)
-        
+    elif request.method == 'POST' and not request.user.is_authenticated:
+        return redirect('login')   
+    
     related_comments = comment.objects.filter(post=post_object)
     
     context = {'post':post_object, 'comments': related_comments, 'form': form}
     return render(request, 'post.html', context)
 
+@login_required(login_url='login')
 def profile_page(request, username):
     related_user = get_object_or_404(User, username=username)
     profile_object = get_object_or_404(Profile, related_user=related_user)
     related_posts = related_user.post_set.all()
-    context = {'user': related_user, 'profile': profile_object, 'media': settings.MEDIA_URL, 'posts': related_posts}
+    is_following = followship.objects.filter(related_user=request.user, followed_user=related_user).count()
+    if is_following == 0:
+        print(is_following)
+        is_following = False
+    else:
+        is_following = True
+    context = {
+        'user': related_user, 
+        'profile': profile_object, 
+        'media': settings.MEDIA_URL, 
+        'posts': related_posts, 
+        'is_following': is_following,
+        'followers': followship.followers_count(user=related_user),
+        'following': followship.following_count(followed_by=related_user),
+    }
     return render(request, 'profile.html', context)
 
 @login_required(login_url='login')
@@ -114,3 +130,63 @@ def editPost(request, pk):
             messages.error(request, 'entries are invalid')
     
     return render(request, 'edit_post.html', {'form': form}) 
+
+@login_required(login_url='login')
+def follow(request, username):
+    related_user = request.user
+    followed_user = get_object_or_404(User, username=username)
+    
+    is_following = followship.objects.filter(related_user=related_user, followed_user=followed_user)
+    
+    if is_following.count() == 0 :
+        print("add")
+        followship.objects.create(related_user=related_user, followed_user=followed_user)
+        return redirect('profile', username=followed_user)
+    else:
+        print("remove")
+        is_following.delete()
+        return redirect('profile', username=followed_user)
+    
+def logout_page(request):
+    logout(request)
+    return redirect('login')
+
+@login_required(login_url='login')
+def add_rate(request, username):
+    related_user = get_object_or_404(User, username=username)
+    if request.method == 'POST':
+        rate = request.POST.get('rate')
+        related_profile = Profile.objects.filter(related_user=related_user).first()
+        res = (related_profile.rate * related_profile.rate_count)
+        res += int(rate)
+        res /= (related_profile.rate_count+1)
+        related_profile.rate_count += 1
+        related_profile.rate = res
+        related_profile.save()
+        messages.success(request, 'Rate added successfully')
+        return redirect('profile', related_user.username)
+    
+    
+@login_required(login_url='login')
+def edit_profile(request, username):
+    related_user = get_object_or_404(User, username=username)
+    related_profile = Profile.objects.filter(related_user=related_user).first()
+    form = forms.profileForm(instance=related_profile)
+    
+    if request.method == 'POST':
+        form = forms.profileForm(request.POST, request.FILES, instance=related_profile)
+        print(form.data)
+        if form.is_valid():
+            # profile_form = form.save(commit=False)
+            # profile_form.related_user = related_user
+            form.save()
+            messages.success(request, 'profile updated successfully')
+            return redirect('profile', related_user.username)
+        else:
+            form = forms.profileForm(instance=related_profile)
+            messages.error(request, 'entries are invalid')
+    
+    return render(request, 'profile_edit.html', {'form': form}) 
+    
+def search(request):
+    pass

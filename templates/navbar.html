@@ -1,41 +1,44 @@
-<header class="p-3 mb-3 border-bottom">
-    <div class="container">
-      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
-          <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"/></svg>
-        </a>
-
-        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-          <li><a href="{% url 'home' %}" class="nav-link px-2 link-secondary">Home</a></li>
-          <li><a href="#" class="nav-link px-2 link-dark">Explore</a></li>
-          {% if request.user.is_authenticated %}
-          {% comment %} <li><a href="{% url 'logout' %}" class="nav-link px-2 link-dark">logout</a></li> {% endcomment %}
-          <li><a href="{% url 'register' %}" class="nav-link px-2 link-dark">Sign up</a></li>
-          {% else %}
-          <li><a href="{% url 'login' %}" class="nav-link px-2 link-dark">login</a></li>
-          {% endif %}
-        </ul>
-
-        <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search" action="{% url 'home' %}">
-          <input type="search" name="q" class="form-control" placeholder="Search..." aria-label="Search">
-        </form>
-
-        <div class="dropdown text-end">
-          <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if request.user.profile_set.all.avatar %}
-            <img src="request.user.profile_set.all.avatar" alt="mdo" width="32" height="32" class="rounded-circle">
-            {% else %}
-            <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
-            {% endif %}
-          </a>
-          <ul class="dropdown-menu text-small">
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">{{request.user}}</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Sign out</a></li>
-          </ul>
+{% load static %}
+<header class="tm-header" id="tm-header">
+    <div class="tm-header-wrapper">
+        <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="tm-site-header">
+            <!-- <div class="mb-3 mx-auto tm-site-logo"> -->
+                <img src="{% static 'logo.jpg' %}" alt="" style="border-radius: 100%;padding: 0 100px; width: 100%;">
+            <!-- </div>             -->
+            <h1 class="text-center">Credit!</h1>
         </div>
-      </div>
+        <nav class="tm-nav" id="tm-nav">            
+            <ul>
+                <li class="tm-nav-item active"><a href="{% url 'home' %}" class="tm-nav-link">
+                    <i class="fas fa-home"></i>
+                    Home
+                </a></li>
+                {% if request.user.is_authenticated %}
+                <li class="tm-nav-item"><a href="{% url 'newPost' %}" class="tm-nav-link">
+                    <i class="fas fa-pen"></i>
+                    New Post
+                </a></li>
+                <li class="tm-nav-item"><a href="{% url 'edit_profile' request.user.username %}" class="tm-nav-link">
+                    <i class="fas fa-pen"></i>
+                    Edit Profile
+                </a></li>
+                <li class="tm-nav-item"><a href="{% url 'logout' %}" class="tm-nav-link">
+                    <i class="far fa-comments"></i>
+                    Logout
+                </a></li>
+                {% else %}
+                <li class="tm-nav-item"><a href="{% url 'login' %}" class="tm-nav-link">
+                    <i class="fas fa-pen"></i>
+                    Login
+                </a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <p class="tm-mb-80 pr-5 text-white" style="padding: 10px;">
+            Big brother is watching you!
+        </p>
     </div>
 </header>
